@@ -1,8 +1,11 @@
-package com.fulfilment.application.monolith.stores;
+package com.fulfilment.application.monolith.stores.legacy;
 
-import jakarta.enterprise.context.ApplicationScoped;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import jakarta.enterprise.context.ApplicationScoped;
+
+import com.fulfilment.application.monolith.stores.Store;
 
 @ApplicationScoped
 public class LegacyStoreManagerGateway {
@@ -28,11 +31,11 @@ public class LegacyStoreManagerGateway {
 
       // Step 2: Write data to the temporary file
       String content =
-          "Store created. [ name ="
-              + store.name
-              + " ] [ items on stock ="
-              + store.quantityProductsInStock
-              + "]";
+        "Store created. [ name ="
+          + store.name
+          + " ] [ items on stock ="
+          + store.quantityProductsInStock
+          + "]";
       Files.write(tempFile, content.getBytes());
       System.out.println("Data written to temporary file.");
 

@@ -1,12 +1,11 @@
 package com.fulfilment.application.monolith.stores;
-
+import com.fulfilment.application.monolith.stores.legacy.StoreEntityListener;
 import io.quarkus.hibernate.orm.panache.PanacheEntity;
-import jakarta.persistence.Cacheable;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 
 @Entity
 @Cacheable
+@EntityListeners(StoreEntityListener.class)
 public class Store extends PanacheEntity {
 
   @Column(length = 40, unique = true)
@@ -14,7 +13,8 @@ public class Store extends PanacheEntity {
 
   public int quantityProductsInStock;
 
-  public Store() {}
+  public Store() {
+  }
 
   public Store(String name) {
     this.name = name;
