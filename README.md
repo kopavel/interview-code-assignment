@@ -1,5 +1,7 @@
 # Java Code Assignment
 
+This is a short code assignment that explores various aspects of software development, including API implementation, documentation, persistence layer handling, and testing.
+
 ## About the assignment
 
 You will find the tasks of this assignment on [CODE_ASSIGNMENT](CODE_ASSIGNMENT.md) file
@@ -79,3 +81,7 @@ Navigate to:
 <http://localhost:8080/index.html>
 
 Have fun, and join the team of contributors!
+
+## Troubleshooting
+
+Using **IntelliJ**, in case the generated code is not recognized and you have compilation failures, you may need to add `target/.../jaxrs` folder as "generated sources".
