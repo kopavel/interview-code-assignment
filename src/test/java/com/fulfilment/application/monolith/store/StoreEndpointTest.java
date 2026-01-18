@@ -1,5 +1,6 @@
-package com.fulfilment.application.monolith.products;
+package com.fulfilment.application.monolith.store;
 
+import com.fulfilment.application.monolith.stores.Store;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.Test;
 
@@ -9,11 +10,11 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.IsNot.not;
 
 @QuarkusTest
-public class ProductEndpointTest {
+public class StoreEndpointTest {
 
   @Test
   public void testCrudProduct() {
-    final String path = "product";
+    final String path = "stores";
 
     // List all, should have all 3 products the database has initially:
     given()
@@ -35,8 +36,9 @@ public class ProductEndpointTest {
       .body(not(containsString("TONSTAD")), containsString("KALLAX"), containsString("BESTÅ"));
 
     //update
-    Product entity = new Product("KALLA2");
-    entity.stock = 10;
+    Store entity = new Store();
+    entity.name = "KALLA2";
+    entity.quantityProductsInStock = 5;
     given()
       .contentType(JSON)
       .body(entity)
@@ -51,18 +53,33 @@ public class ProductEndpointTest {
       .statusCode(200)
       .body(
         not(containsString("KALLAX")),
-        containsString("KALLA2"),
-        not(containsString(":5}")),
-        containsString(":10}"));
+        containsString("KALLA2"), containsString(":5}"));
 
-    //Exception
+    //patch
+    entity.quantityProductsInStock = 10;
+    given()
+      .contentType(JSON)
+      .body(entity)
+      .when()
+      .patch(path + "/2")
+      .then()
+      .statusCode(200);
+    given()
+      .when()
+      .get(path + "/2")
+      .then()
+      .statusCode(200)
+      .body(
+        not(containsString(":5}")), containsString(":10}"));
+
+    //exception
     given()
       .when()
       .get(path + "/112")
       .then()
       .statusCode(404)
       .body(
-        containsString("Product with id of 112 does not exist."));
+        containsString("Store with id of 112 does not exist."));
   }
 
 }
