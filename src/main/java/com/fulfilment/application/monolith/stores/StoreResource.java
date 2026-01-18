@@ -17,6 +17,7 @@ import java.util.List;
 @ApplicationScoped
 @Produces("application/json")
 @Consumes("application/json")
+@Transactional
 public class StoreResource {
   private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
 
@@ -36,7 +37,6 @@ public class StoreResource {
   }
 
   @POST
-  @Transactional
   public Response create(Store store) {
     if (store.id != null) {
       throw new WebApplicationException("Id was invalidly set on request.", 422);
@@ -48,7 +48,6 @@ public class StoreResource {
 
   @PUT
   @Path("{id}")
-  @Transactional
   public Store update(@PathParam("id") Long id, Store updatedStore) {
     if (updatedStore.name == null) {
       throw new WebApplicationException("Store Name was not set on request.", 422);
@@ -67,7 +66,6 @@ public class StoreResource {
 
   @PATCH
   @Path("{id}")
-  @Transactional
   public Store patch(@PathParam("id") Long id, Store updatedStore) {
     if (updatedStore.name == null) {
       throw new WebApplicationException("Store Name was not set on request.", 422);
@@ -91,7 +89,6 @@ public class StoreResource {
 
   @DELETE
   @Path("{id}")
-  @Transactional
   public Response delete(@PathParam("id") Long id) {
     Store entity = Store.findById(id);
     if (entity == null) {

@@ -4,9 +4,10 @@ import com.fulfilment.application.monolith.stores.legacy.LegacyStoreManagerGatew
 import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
-import jakarta.transaction.*;
+import jakarta.transaction.UserTransaction;
 import org.junit.jupiter.api.Test;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,21 +18,31 @@ public class StoreLegacyTest {
   UserTransaction utx;
 
   @Test
-  public void testCreateStore() throws SystemException, NotSupportedException, HeuristicRollbackException,
-    HeuristicMixedException, RollbackException {
+  public void testCreateStore() throws Exception {
+
     utx.begin();
     LegacyStoreManagerGateway mockGateway = mock(LegacyStoreManagerGateway.class);
     QuarkusMock.installMockForType(mockGateway, LegacyStoreManagerGateway.class);
+
+    //INSERT
     Store store = new Store("LegacySyncTest");
     store.quantityProductsInStock = 10;
     store.persist();
     utx.commit();
+
+    // UPDATE
     utx.begin();
-    store.name = "newOne";
+    Store managed = Store.findById(store.id);
+    managed.name = "LegacySyncTestUpdated";
     utx.commit();
+
+    // DELETE
     utx.begin();
-    store.delete();
+    Store toDelete = Store.findById(store.id);
+    toDelete.delete();
     utx.commit();
-    verify(mockGateway, times(1)).createStoreOnLegacySystem(store);
+
+    verify(mockGateway, times(1)).createStoreOnLegacySystem(any());
+    verify(mockGateway, times(1)).updateStoreOnLegacySystem(any());
   }
 }

@@ -1,6 +1,7 @@
 package com.fulfilment.application.monolith.warehouses.adapters.database;
 
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.Cacheable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "warehouse")
 @Cacheable
-public class DbWarehouse {
+public class DbWarehouse extends PanacheEntityBase {
 
   @Id @GeneratedValue public Long id;
 
@@ -23,14 +24,21 @@ public class DbWarehouse {
 
   public Integer stock;
 
-  public LocalDateTime createdAt;
+  public LocalDateTime createdAt=LocalDateTime.now();
 
   public LocalDateTime archivedAt;
 
   public DbWarehouse() {}
 
+  public DbWarehouse(Warehouse warehouse) {
+    this.businessUnitCode = warehouse.businessUnitCode;
+    this.location = warehouse.location;
+    this.capacity = warehouse.capacity;
+    this.stock = warehouse.stock;
+  }
+
   public Warehouse toWarehouse() {
-    var warehouse = new Warehouse();
+    Warehouse warehouse = new Warehouse();
     warehouse.businessUnitCode = this.businessUnitCode;
     warehouse.location = this.location;
     warehouse.capacity = this.capacity;
