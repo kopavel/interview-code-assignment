@@ -1,8 +1,11 @@
 package com.fulfilment.application.monolith.warehouses.domain.usecases;
 
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
+import com.fulfilment.application.monolith.warehouses.domain.usecases.exceptions.WarehouseNotWoundException;
+import io.quarkus.test.TestTransaction;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 import jakarta.ws.rs.WebApplicationException;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +19,7 @@ public class ArchiveWarehouseUseCaseTest {
   @Inject WarehouseStore warehouseRepository;
 
   @Test
+  @TestTransaction
   public void testSuccessArchiveWarehouse() {
     assertTrue(warehouseRepository.getAll()
                                   .stream()
@@ -29,7 +33,8 @@ public class ArchiveWarehouseUseCaseTest {
   }
 
   @Test
+  @TestTransaction
   public void testFailedArchiveWarehouse() {
-    assertThrowsExactly(WebApplicationException.class, () -> archiveWarehouseUseCase.archive("100"));
+    assertThrowsExactly(WarehouseNotWoundException.class, () -> archiveWarehouseUseCase.archive("100"));
   }
 }

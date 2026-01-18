@@ -27,17 +27,22 @@ public class ReplaceWarehouseUseCase implements ReplaceWarehouseOperation {
     if (!oldWarehouse.stock.equals(newWarehouse.stock)) {
       throw new StockChangeException();
     }
+    Location location = locationResolver.resolveByIdentifier(newWarehouse.location);
+    if (location == null) {
+      throw new LocationNotFoundException(newWarehouse.location);
+    }
+    Capacity currentCapacity = warehouseStore.getCurrentCapacity(location);
     if (!oldWarehouse.location.equals(newWarehouse.location)) {
-      Location location = locationResolver.resolveByIdentifier(newWarehouse.location);
-      if (location == null) {
-        throw new LocationNotFoundException(newWarehouse.location);
-      }
-      Capacity currentCapacity = warehouseStore.getCurrentCapacity(location);
       if (currentCapacity.currentNumberOfWarehouses == location.maxNumberOfWarehouses ||
         currentCapacity.currentCapacity + newWarehouse.capacity > location.maxCapacity) {
         throw new LocationIsFullException(location.identification);
       }
+    } else {
+      if (currentCapacity.currentCapacity - oldWarehouse.capacity + newWarehouse.capacity > location.maxCapacity) {
+        throw new LocationIsFullException(location.identification);
+      }
     }
+
     warehouseStore.update(newWarehouse);
     return oldWarehouse;
   }
