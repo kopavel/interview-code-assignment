@@ -3,6 +3,7 @@ package com.fulfilment.application.monolith.warehouses.adapters.database;
 import com.fulfilment.application.monolith.warehouses.domain.models.Location;
 import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
 import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
+import com.fulfilment.application.monolith.warehouses.domain.usecases.exceptions.WarehouseNotWoundException;
 import io.quarkus.hibernate.orm.panache.PanacheRepository;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
@@ -40,7 +41,7 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
     DbWarehouse dbWarehouse =
       find("id=?1 and archivedAt is null", id).firstResult();
     if (dbWarehouse == null) {
-      throw new IllegalArgumentException("Warehouse with id " + id + " does not exist.");
+      throw new WarehouseNotWoundException(id);
     }
     dbWarehouse.archivedAt = LocalDateTime.now();
   }
