@@ -5,7 +5,7 @@ import io.quarkus.test.junit.QuarkusMock;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import jakarta.transaction.UserTransaction;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -13,36 +13,59 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @QuarkusTest
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class StoreLegacyTest {
   @Inject
   UserTransaction utx;
 
   @Test
-  public void testCreateStore() throws Exception {
-
+  @Order(1)
+  public void testInsertLegacyHandler() throws Exception {
     utx.begin();
     LegacyStoreManagerGateway mockGateway = mock(LegacyStoreManagerGateway.class);
     QuarkusMock.installMockForType(mockGateway, LegacyStoreManagerGateway.class);
+    try {
+      Store store = new Store("LegacySyncTest");
+      store.quantityProductsInStock = 10;
+      store.persist();
 
-    //INSERT
-    Store store = new Store("LegacySyncTest");
-    store.quantityProductsInStock = 10;
-    store.persist();
-    utx.commit();
-
-    // UPDATE
-    utx.begin();
-    Store managed = Store.findById(store.id);
-    managed.name = "LegacySyncTestUpdated";
-    utx.commit();
-
-    // DELETE
-    utx.begin();
-    Store toDelete = Store.findById(store.id);
-    toDelete.delete();
-    utx.commit();
+    } finally {
+      utx.commit();
+    }
 
     verify(mockGateway, times(1)).createStoreOnLegacySystem(any());
+    verify(mockGateway, times(0)).updateStoreOnLegacySystem(any());
+  }
+
+  @Test
+  @Order(2)
+  public void testUpdateLegacyHandler() throws Exception {
+    LegacyStoreManagerGateway mockGateway = mock(LegacyStoreManagerGateway.class);
+    QuarkusMock.installMockForType(mockGateway, LegacyStoreManagerGateway.class);
+    utx.begin();
+    try {
+      Store forUpdate = Store.find("name = 'LegacySyncTest'").firstResult();
+      forUpdate.name = "LegacySyncTestUpdated";
+    } finally {
+      utx.commit();
+    }
+    verify(mockGateway, times(0)).createStoreOnLegacySystem(any());
     verify(mockGateway, times(1)).updateStoreOnLegacySystem(any());
+  }
+
+  @Order(3)
+  @Test
+  public void testDeleteLegacyHandler() throws Exception {
+    LegacyStoreManagerGateway mockGateway = mock(LegacyStoreManagerGateway.class);
+    QuarkusMock.installMockForType(mockGateway, LegacyStoreManagerGateway.class);
+    utx.begin();
+    try {
+      Store toDelete = Store.find("name = 'LegacySyncTestUpdated'").firstResult();
+      toDelete.delete();
+    } finally {
+      utx.commit();
+    }
+    verify(mockGateway, times(0)).createStoreOnLegacySystem(any());
+    verify(mockGateway, times(0)).updateStoreOnLegacySystem(any());
   }
 }

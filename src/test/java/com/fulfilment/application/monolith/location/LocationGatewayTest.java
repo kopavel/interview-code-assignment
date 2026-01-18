@@ -16,10 +16,14 @@ public class LocationGatewayTest {
   LocationResolver locationGateway;
 
   @Test
-  public void testWhenResolveExistingLocationShouldReturn() {
+  public void testSuccessLocationResolver() {
     Location location = locationGateway.resolveByIdentifier("ZWOLLE-001");
     assertEquals("ZWOLLE-001", location.identification);
-    location = locationGateway.resolveByIdentifier("ZWOLLE-999");
+  }
+
+  @Test
+  public void testFaliedLocationResolver() {
+    Location location = locationGateway.resolveByIdentifier("ZWOLLE-999");
     assertNull(location);
   }
 }
