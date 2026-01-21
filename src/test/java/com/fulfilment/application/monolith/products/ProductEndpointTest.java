@@ -23,6 +23,28 @@ public class ProductEndpointTest {
       .statusCode(200)
       .body(containsString("TONSTAD"), containsString("KALLAX"), containsString("BESTÅ"));
 
+    //Create
+    Product newProd = new Product("NewProd");
+    given()
+      .when()
+      .contentType(JSON)
+      .body(newProd)
+      .post(path)
+      .then()
+      .statusCode(201)
+      .body(containsString("NewProd"));
+
+    //update
+    newProd.name = "UpdatedProd";
+    given()
+      .when()
+      .contentType(JSON)
+      .body(newProd)
+      .put(path+"/4")
+      .then()
+      .statusCode(200)
+      .body(containsString("UpdatedProd"));
+
     // Delete the TONSTAD:
     given().when().delete(path + "/1").then().statusCode(204);
 

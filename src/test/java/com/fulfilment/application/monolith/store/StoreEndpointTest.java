@@ -24,6 +24,18 @@ public class StoreEndpointTest {
       .statusCode(200)
       .body(containsString("TONSTAD"), containsString("KALLAX"), containsString("BESTÅ"));
 
+    //create
+    Store newStore=new Store();
+    newStore.name="NewStore";
+    given()
+      .when()
+      .contentType(JSON)
+      .body(newStore)
+      .post(path)
+      .then()
+      .statusCode(201)
+      .body(containsString("NewStore"));
+
     // Delete the TONSTAD:
     given().when().delete(path + "/1").then().statusCode(204);
 
