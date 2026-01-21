@@ -1,0 +1,156 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > CreateWarehouseUseCase</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.fulfilment.application.monolith.warehouses.domain.usecases</a>
+</div>
+
+<h1>Coverage Summary for Class: CreateWarehouseUseCase (com.fulfilment.application.monolith.warehouses.domain.usecases)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">CreateWarehouseUseCase</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (2/2)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    87.5%
+  </span>
+  <span class="absValue">
+    (7/8)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (12/12)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.fulfilment.application.monolith.warehouses.domain.usecases;
+&nbsp;
+&nbsp;import com.fulfilment.application.monolith.warehouses.adapters.database.Capacity;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.models.Location;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.models.Warehouse;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.ports.CreateWarehouseOperation;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.ports.LocationResolver;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.ports.WarehouseStore;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.usecases.exceptions.LocationIsFullException;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.usecases.exceptions.LocationNotFoundException;
+&nbsp;import com.fulfilment.application.monolith.warehouses.domain.usecases.exceptions.WarehouseAlreadyExistException;
+&nbsp;import jakarta.enterprise.context.ApplicationScoped;
+&nbsp;import jakarta.inject.Inject;
+&nbsp;import jakarta.transaction.Transactional;
+&nbsp;
+&nbsp;@ApplicationScoped
+&nbsp;@Transactional
+<b class="fc">&nbsp;public class CreateWarehouseUseCase implements CreateWarehouseOperation {</b>
+&nbsp;
+&nbsp;  @Inject WarehouseStore warehouseStore;
+&nbsp;  @Inject LocationResolver locationResolver;
+&nbsp;
+&nbsp;  @Override
+&nbsp;  public void create(Warehouse warehouse) {
+<b class="fc">&nbsp;    Warehouse byBusinessUnitCode = warehouseStore.findByBusinessUnitCode(warehouse.businessUnitCode);</b>
+<b class="fc">&nbsp;    if (byBusinessUnitCode != null) {</b>
+<b class="fc">&nbsp;      throw new WarehouseAlreadyExistException(warehouse.businessUnitCode);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    Location location = locationResolver.resolveByIdentifier(warehouse.location);</b>
+<b class="fc">&nbsp;    if (location == null) {</b>
+<b class="fc">&nbsp;      throw new LocationNotFoundException(warehouse.location);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    Capacity currentCapacity = warehouseStore.getCurrentCapacity(location);</b>
+<b class="pc">&nbsp;    if (currentCapacity.currentNumberOfWarehouses + 1 &gt; location.maxNumberOfWarehouses ||</b>
+<b class="fc">&nbsp;      currentCapacity.currentCapacity + warehouse.capacity &gt; location.maxCapacity) {</b>
+<b class="fc">&nbsp;      throw new LocationIsFullException(warehouse.location);</b>
+&nbsp;    }
+<b class="fc">&nbsp;    warehouseStore.create(warehouse);</b>
+&nbsp;  }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-01-21 20:11</div>
+</div>
+</body>
+</html>
