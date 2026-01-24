@@ -161,7 +161,9 @@
       }
 
       function _error(response) {
-        alert(response.data?.message || response.statusText);
+        // Показываем `error` из тела ответа, если оно есть
+        const msg = response.data?.error || response.statusText || 'Unknown error';
+        alert(msg);
       }
 
       function _clearForms() {
