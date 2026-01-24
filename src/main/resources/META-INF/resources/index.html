@@ -1,153 +1,280 @@
 <!doctype html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <title>Hibernate ORM with Panache quickstart - Quarkus</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.8/wing.min.css"/>
-    <style>
-        input[type=number] {
-            width: 100%;
-            padding: 12px 20px;
-            margin: 8px 0;
-            display: inline-block;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box;
-            -webkit-transition: .5s;
-            transition: .5s;
-            outline: 0;
-            font-family: 'Open Sans', serif;
-        }
-    </style>
-    <!-- Load AngularJS -->
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
-    <script type="text/javascript">
-      var app = angular.module("ProductManagement", []);
+  <meta charset="utf-8"/>
+  <title>Fulfillment Management</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/wingcss/0.1.8/wing.min.css"/>
+  <style>
+    input[type=submit] {
+      background-color: blue;
+    }
 
-      //Controller Part
-      app.controller("ProductManagementController", function ($scope, $http) {
+    input[type=number] {
+      width: 100%;
+      padding: 12px 20px;
+      margin: 8px 0;
+      display: inline-block;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      box-sizing: border-box;
+      -webkit-transition: .5s;
+      transition: .5s;
+      outline: 0;
+      font-family: 'Open Sans', serif;
+    }
 
-        //Initialize page with default data which is blank in this example
-        $scope.products = [];
+    .entity-block {
+      margin-bottom: 40px;
+    }
 
-        $scope.form = {
-          id: -1,
-          name: ""
-        };
+    .entity-block h3 {
+      margin-top: 20px;
+    }
 
-        //Now load the data from server
-        _refreshPageData();
+    .row {
+      margin-bottom: 8px;
+      white-space: nowrap;
+    }
 
-        //HTTP POST/PUT methods for add/edit products
-        $scope.update = function () {
-          var method = "";
-          var url = "";
-          var data = {};
-          if ($scope.form.id == -1) {
-            //Id is absent so add products - POST operation
-            method = "POST";
-            url = '/product';
-            data.name = $scope.form.name;
-          } else {
-            //If Id is present, it's edit operation - PUT operation
-            method = "PUT";
-            url = '/product/' + $scope.form.id;
-            data.name = $scope.form.name;
-          }
+    .btn {
+      cursor: pointer;
+      color: yellow;
+      background-color: blue;
+      text-decoration: underline;
+      margin-right: 5px;
+    }
+    .b-edit {
+      flex: 0 0 40px;
+    }
+    .b-delete {
+      flex: 0 0 60px;
+    }
+  </style>
+  <!-- AngularJS 1.x -->
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+  <script type="text/javascript">
+    const app = angular.module("ManagementApp", []);
 
-          $http({
-            method: method,
-            url: url,
-            data: angular.toJson(data),
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          }).then(_success, _error);
-        };
+    app.controller("ManagementController", function ($scope, $http) {
+      // --- Data ---
+      $scope.products = [];
+      $scope.stores = [];
+      $scope.warehouses = [];
+      $scope.rules = [];
+      // --- Forms ---
+      $scope.productForm = {id: -1, name: ""};
+      $scope.storeForm = {id: -1, name: "", quantityProductsInStock: null};
+      $scope.warehouseForm = {id: -1, name: "", businessUnitCode: ""};
+      $scope.ruleForm = {product: null, store: null, warehouse: null};
 
-        //HTTP DELETE- delete product by id
-        $scope.remove = function (product) {
-          $http({
-            method: 'DELETE',
-            url: '/product/' + product.id
-          }).then(_success, _error);
-        };
+      // --- Products ---
+      function refreshProducts() {
+        $http.get('/product').then(r => $scope.products = r.data);
+      }
 
-        //In case of edit products, populate form with product data
-        $scope.edit = function (product) {
-          $scope.form.name = product.name;
-          $scope.form.id = product.id;
-        };
+      $scope.updateProduct = function () {
+        const method = $scope.productForm.id === -1 ? 'POST' : 'PUT';
+        const url = '/product' + ($scope.productForm.id === -1 ? '' : '/' + $scope.productForm.id);
+        $http({
+          method: method,
+          url: url,
+          data: angular.toJson($scope.productForm),
+          headers: {'Content-Type': 'application/json'}
+        })
+          .then(_success, _error);
+      };
+      $scope.editProduct = function (p) {
+        $scope.productForm = {...p};
+      };
+      $scope.removeProduct = function (p) {
+        $http.delete('/product/' + p.id).then(_success, _error);
+      };
 
-          /* Private Methods */
-        //HTTP GET- get all products collection
-        function _refreshPageData() {
-          $http({
-            method: 'GET',
-            url: '/product'
-          }).then(function successCallback(response) {
-            $scope.products = response.data;
-          }, function errorCallback(response) {
-            console.log(response.statusText);
-          });
-        }
+      // --- Stores ---
+      function refreshStores() {
+        $http.get('/stores').then(r => $scope.stores = r.data);
+      }
 
-        function _success(response) {
-          _refreshPageData();
-          _clearForm()
-        }
+      $scope.updateStore = function () {
+        const method = $scope.storeForm.id === -1 ? 'POST' : 'PUT';
+        const url = '/stores' + ($scope.storeForm.id === -1 ? '' : '/' + $scope.storeForm.id);
+        $http({
+          method: method,
+          url: url,
+          data: angular.toJson($scope.storeForm),
+          headers: {'Content-Type': 'application/json'}
+        })
+          .then(_success, _error);
+      };
+      $scope.editStore = function (s) {
+        $scope.storeForm = {...s};
+      };
+      $scope.removeStore = function (s) {
+        $http.delete('/stores/' + s.id).then(_success, _error);
+      };
 
-        function _error(response) {
-          alert(response.data.message || response.statusText);
-        }
+      // --- Warehouses ---
+      function refreshWarehouses() {
+        $http.get('/warehouse').then(r => $scope.warehouses = r.data);
+      }
 
-        //Clear the form
-        function _clearForm() {
-          $scope.form.name = "";
-          $scope.form.id = -1;
-        }
-      });
-    </script>
+      $scope.updateWarehouse = function () {
+        const method = $scope.warehouseForm.id ? 'PUT' : 'POST';
+        const url = '/warehouse' + ($scope.warehouseForm.id ? '/' + $scope.warehouseForm.id : '');
+        $http({
+          method: method,
+          url: url,
+          data: angular.toJson($scope.warehouseForm),
+          headers: {'Content-Type': 'application/json'}
+        })
+          .then(_success, _error);
+      };
+      $scope.editWarehouse = function (w) {
+        $scope.warehouseForm = {...w};
+      };
+      $scope.removeWarehouse = function (w) {
+        $http.delete('/warehouse/' + w.id).then(_success, _error);
+      };
+
+      // --- Rules ---
+      function refreshRules() {
+        $http.get('/rules').then(r => $scope.rules = r.data);
+      }
+
+      $scope.updateRule = function () {
+        if (!$scope.ruleForm.product || !$scope.ruleForm.store || !$scope.ruleForm.warehouse) return;
+        $http.post('/rules', angular.toJson($scope.ruleForm), {headers: {'Content-Type': 'application/json'}})
+          .then(_success, _error);
+      };
+
+      $scope.removeRule = function (r) {
+        $http.delete('/rules/' + r.id).then(_success, _error);
+      };
+
+      // --- Common handlers ---
+      function _success() {
+        refreshProducts();
+        refreshStores();
+        refreshWarehouses();
+        refreshRules();
+        _clearForms();
+      }
+
+      function _error(response) {
+        alert(response.data?.message || response.statusText);
+      }
+
+      function _clearForms() {
+        $scope.productForm = {id: -1, name: ""};
+        $scope.storeForm = {id: -1, name: "", quantityProductsInStock: null};
+        $scope.warehouseForm = {id: -1, name: "", businessUnitCode: ""};
+        $scope.ruleForm = {product: null, store: null, warehouse: null};
+      }
+
+      // --- Initial load ---
+      refreshProducts();
+      refreshStores();
+      refreshWarehouses();
+      refreshRules();
+
+    });
+  </script>
 </head>
-<body ng-app="ProductManagement" ng-controller="ProductManagementController">
-
+<body ng-app="ManagementApp" ng-controller="ManagementController">
 <div class="container">
-    <h1>Java Code Assignment</h1>
-    <p>This application demonstrates how a Quarkus application implements a CRUD endpoint to manage products using Hibernate ORM with Panache.
-        This management interface invokes the CRUD service endpoint, which interacts with a database using JPA and several other well known libraries.
-    </p>
+  <h1>Fulfillment Management Dashboard</h1>
+  <p>Manage Products, Stores and Warehouses using CRUD operations.</p>
 
-    <h3>Add/Edit an Product to the Warehouse</h3>
-    <form ng-submit="update()">
-        <div class="row">
-            <div class="col-6"><input type="text" placeholder="Name" ng-model="form.name" size="60"/></div>
-        </div>
-        <input type="submit" value="Save"/>
+  <!-- Products -->
+  <div class="entity-block">
+    <h3>Products</h3>
+    <form ng-submit="updateProduct()">
+      <div class="row"><input type="text" ng-model="productForm.name" placeholder="Name"/></div>
+      <div class="row"><input type="submit" value="Save"/></div>
     </form>
-
-    <h3>Product List</h3>
-    <div class="row">
-        <div class="col-2">Name</div>
+    <div style="width: fit-content">
+      <div class="row" ng-repeat="p in products" style="display: flex; justify-content: flex-end; align-items: center;">
+        <span>{{p.name}}</span>
+        <span class="btn b-edit" ng-click="editProduct(p)">Edit</span>
+        <span class="btn b-delete" ng-click="removeProduct(p)">Remove</span>
+      </div>
     </div>
-    <div class="row" ng-repeat="product in products">
-        <div class="col-2">{{ product.name }}</div>
-        <div class="col-8"><a ng-click="edit( product )" class="btn">Edit</a> <a ng-click="remove( product )" class="btn">Remove</a>
-        </div>
-    </div>
+  </div>
 
-    <p>Behind the scenes, we have:
-        <ul>
-            <li>Hibernate ORM with Panache taking care of all CRUD operations</li>
-            <li>RESTEasy powering the REST API</li>
-            <li>ArC, a CDI based dependency injection framework</li>
-            <li>the Narayana Transaction Manager coordinating all transactions</li>
-            <li>Agroal, the high performance Datasource implementation</li>
-            <li>Infinispan used as Hibernate 2nd level caching: enabled on both entities and queries</li>
-            <li>The Undertow webserver</li>
-            <li>Some magic bytecode generation plugged in the compiler...</li>
-        </ul>
-    </p>
+  <!-- Stores -->
+  <div class="entity-block">
+    <h3>Stores</h3>
+    <form ng-submit="updateStore()">
+      <div class="row"><input type="text" ng-model="storeForm.name" placeholder="Name"/></div>
+      <div class="row"><input type="number" ng-model="storeForm.quantityProductsInStock" placeholder="Quantity"/></div>
+      <div class="row"><input type="submit" value="Save"/></div>
+    </form>
+    <div style="width: fit-content">
+      <div class="row" ng-repeat="s in stores" style="display: flex; justify-content: flex-end; align-items: center;">
+        <span>{{s.name}} ({{s.quantityProductsInStock}})</span>
+        <span class="btn b-edit" ng-click="editStore(s)">Edit</span>
+        <span class="btn b-delete" ng-click="removeStore(s)">Remove</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Warehouses -->
+  <div class="entity-block">
+    <h3>Warehouses</h3>
+    <form ng-submit="updateWarehouse()">
+      <div class="row"><input type="text" ng-model="warehouseForm.name" placeholder="Name"/></div>
+      <div class="row"><input type="text" ng-model="warehouseForm.businessUnitCode" placeholder="Business Unit Code"/>
+      </div>
+      <div class="row"><input type="submit" value="Save"/></div>
+    </form>
+    <div style="width: fit-content">
+      <div class="row" ng-repeat="w in warehouses" style="display: flex; justify-content: flex-end; align-items: center;">
+        <span>{{w.name}} ({{w.businessUnitCode}})</span>
+        <span class="btn b-edit" ng-click="editWarehouse(w)">Edit</span>
+        <span class="btn b-delete" ng-click="removeWarehouse(w)">Remove</span>
+      </div>
+    </div>
+  </div>
+  <!-- Rules -->
+  <div class="entity-block">
+    <h3>Fulfillment Rules</h3>
+    <form ng-submit="updateRule()">
+      <div class="row">
+        <select ng-model="ruleForm.product" ng-options="p as p.name for p in products">
+          <option value="">Select Product</option>
+        </select>
+      </div>
+      <div class="row">
+        <select ng-model="ruleForm.warehouse" ng-options="w as w.businessUnitCode for w in warehouses">
+          <option value="">Select Warehouse</option>
+        </select>
+      </div>
+      <div class="row">
+        <select ng-model="ruleForm.store" ng-options="s as s.name for s in stores">
+          <option value="">Select Store</option>
+        </select>
+      </div>
+      <div class="row"><input type="submit" value="Add Rule"/></div>
+    </form>
+    <div style="width: fit-content">
+      <div class="row" ng-repeat="r in rules" style="display: flex; justify-content: flex-end; align-items: center;">
+        <span>{{r.product.name}} → {{r.warehouse.businessUnitCode}} → {{r.store.name}}</span>
+        <span class="btn b-delete" ng-click="removeRule(r)">Remove</span>
+      </div>
+    </div>
+  </div>
+  <p>Behind the scenes, we have:
+  <ul>
+    <li>Hibernate ORM with Panache taking care of all CRUD operations</li>
+    <li>RESTEasy powering the REST API</li>
+    <li>ArC, a CDI based dependency injection framework</li>
+    <li>the Narayana Transaction Manager coordinating all transactions</li>
+    <li>Agroal, the high performance Datasource implementation</li>
+    <li>Infinispan used as Hibernate 2nd level caching: enabled on both entities and queries</li>
+    <li>The Undertow webserver</li>
+    <li>Some magic bytecode generation plugged in the compiler...</li>
+  </ul>
+  </p>
 </div>
-
 </body>
 </html>
